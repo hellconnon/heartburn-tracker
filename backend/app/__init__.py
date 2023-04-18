@@ -37,9 +37,4 @@ def create_app(test_config=None):
     # register blueprints
     register_blueprints(app)
 
-    # a simple page that says hello
-    @app.route('/hello')
-    def hello():
-        return 'Hello, World!'
-
     return app
