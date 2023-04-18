@@ -2,6 +2,8 @@ Flask
 Flask-SQLAlchemy
 Flask-Migrate
 Flask-CORS
+Flask-HTTPAuth
+flask_jwt_extended
 requests
 python-telegram-bot
 telegram
