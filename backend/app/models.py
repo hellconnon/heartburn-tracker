@@ -21,6 +21,17 @@ class Ingredient(db.Model):
     carbohydrates = db.Column(db.Float, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    def serialize(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'fats': self.fats,
+            'calories': self.calories,
+            'proteins': self.proteins,
+            'carbohydrates': self.carbohydrates,
+            'created_at': self.created_at.isoformat()
+        }
+
 
 class Recipe(db.Model):
     id = db.Column(db.Integer, primary_key=True)
