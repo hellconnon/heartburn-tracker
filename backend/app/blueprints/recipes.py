@@ -1,11 +1,11 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from backend.app.models import Recipe, RecipeIngredient, Ingredient, db
+from ..models import Recipe, RecipeIngredient, Ingredient, db
 
 recipes_blueprint = Blueprint('recipes', __name__)
 
 
-@recipes_blueprint.route('/api/recipes', methods=['GET'])
+@recipes_blueprint.route('/recipes', methods=['GET'])
 @jwt_required()
 def get_all_recipes():
     user_id = get_jwt_identity()
@@ -13,7 +13,7 @@ def get_all_recipes():
     return jsonify([recipe.to_dict() for recipe in recipes])
 
 
-@recipes_blueprint.route('/api/recipes', methods=['POST'])
+@recipes_blueprint.route('/recipes', methods=['POST'])
 @jwt_required()
 def create_recipe():
     user_id = get_jwt_identity()
@@ -30,7 +30,7 @@ def create_recipe():
     return jsonify(recipe.to_dict()), 201
 
 
-@recipes_blueprint.route('/api/recipes/<int:recipe_id>', methods=['GET'])
+@recipes_blueprint.route('/recipes/<int:recipe_id>', methods=['GET'])
 @jwt_required()
 def get_recipe(recipe_id):
     user_id = get_jwt_identity()
@@ -39,7 +39,7 @@ def get_recipe(recipe_id):
     return jsonify(recipe.to_dict())
 
 
-@recipes_blueprint.route('/api/recipes/<int:recipe_id>', methods=['PUT'])
+@recipes_blueprint.route('/recipes/<int:recipe_id>', methods=['PUT'])
 @jwt_required()
 def update_recipe(recipe_id):
     user_id = get_jwt_identity()
@@ -53,7 +53,7 @@ def update_recipe(recipe_id):
     return jsonify(recipe.to_dict())
 
 
-@recipes_blueprint.route('/api/recipes/<int:recipe_id>', methods=['DELETE'])
+@recipes_blueprint.route('/recipes/<int:recipe_id>', methods=['DELETE'])
 @jwt_required()
 def delete_recipe(recipe_id):
     user_id = get_jwt_identity()

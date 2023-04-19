@@ -1,72 +1,109 @@
 from flask import Blueprint, request, jsonify
-from flask_httpauth import HTTPBasicAuth
-from backend.app.models import User
-from backend.app.utils import authenticate_user, create_user, link_telegram_account
+from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity
+from werkzeug.security import generate_password_hash, check_password_hash
+from ..models import User, db
 
-users_blueprint = Blueprint('users', __name__)
-auth = HTTPBasicAuth()
-
-
-@auth.verify_password
-def verify_password(email, password):
-    user = authenticate_user(email, password)
-    if user:
-        return user
+users_blueprint = Blueprint("users", __name__)
 
 
-@users_blueprint.route('/auth/register', methods=['POST'])
+@users_blueprint.route("/auth/register", methods=["POST"])
 def register():
     data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
+    email = data.get("email")
+    password = data.get("password")
 
     if not email or not password:
-        return jsonify({'error': 'Email and password are required'}), 400
+        return jsonify({"msg": "Email and password required"}), 400
 
-    user = create_user(email, password)
+    if User.query.filter_by(email=email).first():
+        return jsonify({"msg": "Email already registered"}), 400
 
-    if user:
-        return jsonify({'message': 'User registered successfully'}), 201
-    else:
-        return jsonify({'error': 'An error occurred during registration'}), 500
+    hashed_password = generate_password_hash(password)
+    new_user = User(email=email, password=hashed_password)
+    db.session.add(new_user)
+    db.session.commit()
+
+    return jsonify({"msg": "User registered"}), 201
 
 
-@users_blueprint.route('/auth/login', methods=['POST'])
-@auth.login_required
+@users_blueprint.route("/auth/login", methods=["POST"])
 def login():
-    user = auth.current_user()
-    return jsonify({'message': 'User logged in successfully', 'user_id': user.id}), 200
-
-
-@users_blueprint.route('/auth/link_telegram', methods=['POST'])
-@auth.login_required
-def link_telegram():
     data = request.get_json()
-    telegram_id = data.get('telegram_id')
+    email = data.get("email")
+    password = data.get("password")
+
+    if not email or not password:
+        return jsonify({"msg": "Email and password required"}), 400
+
+    user = User.query.filter_by(email=email).first()
+
+    if not user or not check_password_hash(user.password, password):
+        return jsonify({"msg": "Invalid email or password"}), 401
+
+    access_token = create_access_token(identity=user.id)
+    refresh_token = create_refresh_token(identity=user.id)
+
+    return jsonify({"access_token": access_token, "refresh_token": refresh_token}), 200
+
+
+@users_blueprint.route("/auth/login_telegram", methods=["POST"])
+def login_telegram():
+    data = request.get_json()
+    telegram_id = data.get("telegram_id")
 
     if not telegram_id:
-        return jsonify({'error': 'Telegram ID is required'}), 400
+        return jsonify({"msg": "Telegram ID required"}), 400
 
-    user = auth.current_user()
-    success = link_telegram_account(user, telegram_id)
+    user = User.query.filter_by(telegram_id=telegram_id).first()
 
-    if success:
-        return jsonify({'message': 'Telegram account linked successfully'}), 200
-    else:
-        return jsonify({'error': 'An error occurred while linking the Telegram account'}), 500
+    if not user:
+        return jsonify({"msg": "Invalid Telegram ID"}), 401
+
+    access_token = create_access_token(identity=user.id)
+    refresh_token = create_refresh_token(identity=user.id)
+
+    return jsonify({"access_token": access_token, "refresh_token": refresh_token}), 200
 
 
-@users_blueprint.route('/users/<int:user_id>', methods=['GET'])
-@auth.login_required
+@users_blueprint.route("/auth/link_telegram", methods=["POST"])
+@jwt_required()
+def link_telegram():
+    data = request.get_json()
+    telegram_id = data.get("telegram_id")
+
+    if not telegram_id:
+        return jsonify({"msg": "Telegram ID required"}), 400
+
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+
+    if not user:
+        return jsonify({"msg": "User not found"}), 404
+
+    user.telegram_id = telegram_id
+    db.session.commit()
+
+    return jsonify({"msg": "Telegram account linked"}), 200
+
+
+@users_blueprint.route("/users/<int:user_id>", methods=["GET"])
+@jwt_required()
 def get_user(user_id):
-    user = auth.current_user()
+    current_user_id = get_jwt_identity()
 
-    if user.id != user_id:
-        return jsonify({'error': 'Unauthorized'}), 401
+    if user_id != current_user_id:
+        return jsonify({"msg": "Unauthorized"}), 401
 
-    return jsonify({
-        'id': user.id,
-        'email': user.email,
-        'telegram_id': user.telegram_id,
-        'created_at': user.created_at.isoformat()
-    }), 200
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({"msg": "User not found"}), 404
+
+    user_data = {
+        "id": user.id,
+        "email": user.email,
+        "telegram_id": user.telegram_id,
+        "created_at": user.created_at
+    }
+
+    return jsonify(user_data), 200

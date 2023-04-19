@@ -3,13 +3,16 @@ import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from backend.app.blueprints import register_blueprints
+from .blueprints import register_blueprints
 from flask_jwt_extended import JWTManager
 
 
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
+    # register blueprints
+    register_blueprints(app)
+
     app.config.from_mapping(
         SECRET_KEY='dev',
         DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
@@ -34,7 +37,6 @@ def create_app(test_config=None):
     # Enable CORS for your frontend
     CORS(app)
 
-    # register blueprints
-    register_blueprints(app)
+
 
     return app

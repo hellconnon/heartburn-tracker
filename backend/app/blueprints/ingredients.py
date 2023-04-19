@@ -1,18 +1,18 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from backend.app.models import Ingredient, db
+from ..models import Ingredient, db
 
 ingredients_blueprint = Blueprint('ingredients', __name__)
 
 
-@ingredients_blueprint.route('/api/ingredients', methods=['GET'])
+@ingredients_blueprint.route('/ingredients', methods=['GET'])
 @jwt_required()
 def get_ingredients():
     ingredients = Ingredient.query.all()
     return jsonify([ingredient.serialize() for ingredient in ingredients])
 
 
-@ingredients_blueprint.route('/api/ingredients', methods=['POST'])
+@ingredients_blueprint.route('/ingredients', methods=['POST'])
 @jwt_required()
 def add_ingredient():
     data = request.get_json()
@@ -31,7 +31,7 @@ def add_ingredient():
     return jsonify({"message": "Ingredient added successfully", "ingredient": ingredient.serialize()}), 201
 
 
-@ingredients_blueprint.route('/api/ingredients/<int:id>', methods=['PUT'])
+@ingredients_blueprint.route('/ingredients/<int:id>', methods=['PUT'])
 @jwt_required()
 def update_ingredient(id):
     ingredient = Ingredient.query.get(id)
@@ -49,7 +49,7 @@ def update_ingredient(id):
     return jsonify({"message": "Ingredient updated successfully", "ingredient": ingredient.serialize()}), 200
 
 
-@ingredients_blueprint.route('/api/ingredients/<int:id>', methods=['DELETE'])
+@ingredients_blueprint.route('/ingredients/<int:id>', methods=['DELETE'])
 @jwt_required()
 def delete_ingredient(id):
     ingredient = Ingredient.query.get(id)

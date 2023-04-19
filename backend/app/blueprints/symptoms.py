@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from backend.app.models import Symptom, UserSymptom, db
+from ..models import Symptom, UserSymptom, db
 
 symptoms_blueprint = Blueprint('symptoms', __name__)
 

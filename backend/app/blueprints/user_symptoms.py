@@ -1,12 +1,12 @@
 from flask import Blueprint, request, jsonify
-from backend.app.models import User, UserSymptom, Symptom, db
+from ..models import User, UserSymptom, Symptom, db
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 user_symptoms_blueprint = Blueprint('user_symptoms', __name__)
 
 
 # Get user's symptom logs
-@user_symptoms_blueprint.route('/api/users/<int:user_id>/symptoms', methods=['GET'])
+@user_symptoms_blueprint.route('/users/<int:user_id>/symptoms', methods=['GET'])
 @jwt_required()
 def get_user_symptoms(user_id):
     current_user_id = get_jwt_identity()
@@ -18,7 +18,7 @@ def get_user_symptoms(user_id):
 
 
 # Log a symptom for the user
-@user_symptoms_blueprint.route('/api/users/<int:user_id>/symptoms', methods=['POST'])
+@user_symptoms_blueprint.route('/users/<int:user_id>/symptoms', methods=['POST'])
 @jwt_required()
 def add_user_symptom(user_id):
     current_user_id = get_jwt_identity()
@@ -44,7 +44,7 @@ def add_user_symptom(user_id):
 
 
 # Update a user's symptom log
-@user_symptoms_blueprint.route('/api/users/<int:user_id>/symptoms/<int:symptom_log_id>', methods=['PUT'])
+@user_symptoms_blueprint.route('/users/<int:user_id>/symptoms/<int:symptom_log_id>', methods=['PUT'])
 @jwt_required()
 def update_user_symptom(user_id, symptom_log_id):
     current_user_id = get_jwt_identity()
@@ -65,7 +65,7 @@ def update_user_symptom(user_id, symptom_log_id):
 
 
 # Delete a user's symptom log
-@user_symptoms_blueprint.route('/api/users/<int:user_id>/symptoms/<int:symptom_log_id>', methods=['DELETE'])
+@user_symptoms_blueprint.route('/users/<int:user_id>/symptoms/<int:symptom_log_id>', methods=['DELETE'])
 @jwt_required()
 def delete_user_symptom(user_id, symptom_log_id):
     current_user_id = get_jwt_identity()
