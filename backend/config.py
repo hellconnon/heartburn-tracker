@@ -15,6 +15,7 @@ class Config:
 
     # Food database API settings
     FOOD_API_KEY = os.environ.get('FOOD_API_KEY') or 'your-food-api-key'
+    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or 'your-jwt-secret-key'
 
 
 class DevelopmentConfig(Config):

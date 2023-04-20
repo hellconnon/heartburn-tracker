@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from .blueprints import register_blueprints
 from flask_jwt_extended import JWTManager
+from .models import db
 
 
 def create_app(test_config=None):
@@ -13,17 +14,9 @@ def create_app(test_config=None):
     # register blueprints
     register_blueprints(app)
 
-    app.config.from_mapping(
-        SECRET_KEY='dev',
-        DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
-    )
-
-    app.config['JWT_SECRET_KEY'] = 'your-secret-key'  # Replace with your own secret key
-    jwt = JWTManager(app)
-
     if test_config is None:
-        # load the instance config, if it exists, when not testing
-        app.config.from_pyfile('config.py', silent=True)
+        # load config
+        app.config.from_object('config.Config')
     else:
         # load the test config if passed in
         app.config.from_mapping(test_config)
@@ -33,10 +26,16 @@ def create_app(test_config=None):
         os.makedirs(app.instance_path)
     except OSError:
         pass
+    # set up database
+    db.init_app(app)
 
+    # create database schema
+    with app.app_context():
+        db.create_all()
+
+    # Enable JWT
+    jwt = JWTManager(app)
     # Enable CORS for your frontend
     CORS(app)
-
-
 
     return app
