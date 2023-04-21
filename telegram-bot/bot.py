@@ -8,6 +8,7 @@ import requests
 from io import BytesIO
 from PIL import Image
 from dotenv import load_dotenv
+from utils import authenticate_telegram_id
 
 load_dotenv()
 
@@ -22,16 +23,6 @@ async def start(update: Update, context: CallbackContext):
         ' To upload an image, use the paperclip icon and select the image you want to send.')
 
 
-async def handle_text(update: Update, context: CallbackContext):
-    text = update.message.text
-    # Parse the message text to extract symptom name, severity, and notes
-    # Then, call your API to log the symptom for the user
-    # For example:
-    # symptom_name, severity, notes = parse_symptom_info(text)
-    # log_symptom(symptom_name, severity, notes, update.message.from_user.id)
-    await update.message.reply_text(f"Logged symptom: {text}")
-
-
 async def handle_image(update: Update, context: CallbackContext):
     file_id = update.message.photo[-1].file_id
     file = await context.bot.getFile(file_id)
@@ -43,23 +34,24 @@ async def handle_image(update: Update, context: CallbackContext):
 
 
 # Define states for ConversationHandler
-LOG_SYMPTOM, SELECT_SYMPTOM, INPUT_SEVERITY, INPUT_NOTES = range(4)
+LOG_SYMPTOM, INPUT_SEVERITY, INPUT_NOTES, LOG_SYMPTOM_DONE = range(4)
 
 
 async def log_symptom(update: Update, context):
-    await update.message.reply_text("Please, send me the name of the symptom you want to log.")
-    return SELECT_SYMPTOM
-
-
-async def select_symptom(update: Update, context):
-    symptom_name = update.message.text
-    # Search for the symptom using the API
-    response = requests.get(f"{API_BASE_URL}/symptoms?search={symptom_name}")
+    auth_data = authenticate_telegram_id(update.message.from_user.id)
+    if not auth_data:
+        await update.message.reply_text("Telegram ID not registered yest. Please register first.")
+        return ConversationHandler.END
+    user_id = auth_data["user_id"]
+    access_token = auth_data["access_token"]
+    context.user_data["user_id"] = user_id  # save the user id of the backend api
+    context.user_data["headers"] = {
+        "Authorization": f"Bearer {access_token}"}  # Add the bearer token to the context for later states
+    response = requests.get(f"{API_BASE_URL}/symptoms", headers=context.user_data["headers"])
     symptoms = response.json()
-    print(symptoms)
     if len(symptoms) == 0:
-        await update.message.reply_text("No symptom found. Please try again.")
-        return SELECT_SYMPTOM
+        await update.message.reply_text("No symptoms found.")
+        return ConversationHandler.END
 
     keyboard = [[InlineKeyboardButton(s["name"], callback_data=f"{s['id']}")] for s in symptoms]
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -82,7 +74,7 @@ async def input_notes(update: Update, context):
     context.user_data["severity"] = severity
     await update.message.reply_text(
         "Please enter any additional notes about the symptom (or type /skip if you don't want to add notes).")
-    return LOG_SYMPTOM
+    return LOG_SYMPTOM_DONE
 
 
 async def log_symptom_done(update: Update, context):
@@ -91,7 +83,7 @@ async def log_symptom_done(update: Update, context):
         notes = ""
 
     # Log the symptom using the API
-    user_id = update.message.from_user.id
+    user_id = context.user_data["user_id"]
     symptom_data = {
         "user_id": user_id,
         "symptom_id": context.user_data["symptom_id"],
@@ -99,9 +91,10 @@ async def log_symptom_done(update: Update, context):
         "notes": notes
     }
 
-    response = requests.post(f"{API_BASE_URL}/users/{user_id}/symptoms", json=symptom_data)
+    response = requests.post(f"{API_BASE_URL}/users/{user_id}/symptoms", json=symptom_data,
+                             headers=context.user_data["headers"])
 
-    if response.status_code == 200:
+    if response.status_code == 201:
         await update.message.reply_text("Symptom logged successfully!")
     else:
         await update.message.reply_text("An error occurred while logging the symptom. Please try again.")
@@ -122,15 +115,16 @@ def main() -> None:
     application.add_handler(
         ConversationHandler(
             entry_points=[CommandHandler("log_symptom", log_symptom)],
-            states={SELECT_SYMPTOM: [MessageHandler(filters.TEXT, select_symptom)],
-                    INPUT_SEVERITY: [CallbackQueryHandler(input_severity)],
-                    INPUT_NOTES: [MessageHandler(filters.TEXT, input_notes)],
-                    },
+            states={
+                INPUT_SEVERITY: [CallbackQueryHandler(input_severity)],
+                INPUT_NOTES: [MessageHandler(filters.TEXT, input_notes)],
+                LOG_SYMPTOM_DONE: [MessageHandler(filters.TEXT, log_symptom_done)]
+            },
             fallbacks=[CommandHandler("cancel", cancel)],
+            per_user=True,
 
         )
     )
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
     application.add_handler(MessageHandler(filters.PHOTO, handle_image))
 
     application.run_polling()

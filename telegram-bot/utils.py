@@ -13,8 +13,15 @@ def authenticate_telegram_id(telegram_id: int):
         f"{API_URL}/auth/login_telegram",
         json={"telegram_id": telegram_id},
     )
-    return response.json()
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return None
 
 
 if __name__ == "__main__":
-    authenticate_telegram_id(42069)
+    auth_data = authenticate_telegram_id(42069)
+    if auth_data:
+        print(auth_data)
+    else:
+        print("Invalid Telegram ID")
