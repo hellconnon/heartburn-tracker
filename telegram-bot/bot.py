@@ -1,12 +1,11 @@
 import logging
-from telegram import Update, ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram import Update, ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton, File
 from telegram.ext import (Application, ApplicationBuilder, Updater,
                           CommandHandler, MessageHandler, CallbackContext,
                           filters, ConversationHandler, CallbackQueryHandler)
 import os
 import requests
-from io import BytesIO
-from PIL import Image
+import tempfile
 from dotenv import load_dotenv
 from utils import authenticate_telegram_id
 
@@ -24,13 +23,34 @@ async def start(update: Update, context: CallbackContext):
 
 
 async def handle_image(update: Update, context: CallbackContext):
-    file_id = update.message.photo[-1].file_id
-    file = await context.bot.getFile(file_id)
-    image = await file.download_as_bytearray()
-    image = Image.open(BytesIO(image))
-    image.show()
+    auth_data = authenticate_telegram_id(update.effective_user.id)
+    if not auth_data:
+        await update.message.reply_text("You are not registered.")
+        return
+    access_token = auth_data["access_token"]
+    user_id = auth_data["user_id"]
+    telegram_user_id = update.effective_user.id
+    image = update.message.photo[-1]  # Get the highest resolution photo
 
-    await update.message.reply_text("Image uploaded successfully.")
+    # Download the photo
+    image_file: File = await context.bot.get_file(image.file_id)
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+
+        photo_path = os.path.join(temp_dir, f"{telegram_user_id}_{image.file_id}.jpg")
+        await image_file.download_to_drive(photo_path)
+        # Upload the photo to the backend API
+        with open(photo_path, "rb") as file:
+            response = requests.post(
+                f"{API_BASE_URL}/images",
+                headers={"Authorization": f"Bearer {access_token}"},  # Replace with the actual JWT token
+                files={"file": file},
+            )
+
+    if response.status_code == 201:
+        await update.message.reply_text("Image uploaded successfully.")
+    else:
+        await update.message.reply_text("An error occurred while uploading the photo.")
 
 
 # Define states for ConversationHandler

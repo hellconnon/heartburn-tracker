@@ -1,6 +1,6 @@
 # backend/app/blueprints/images.py
 
-from flask import Blueprint, request, jsonify, send_from_directory
+from flask import Blueprint, request, jsonify, send_from_directory, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.utils import secure_filename
 import os
@@ -35,7 +35,9 @@ def upload_image():
     if file and allowed_file(file.filename):
         user_id = get_jwt_identity()
         filename = secure_filename(file.filename)
-        file_path = os.path.join("uploads", user_id, filename)
+        file_path = os.path.join(current_app.instance_path, "uploads", str(user_id), filename)
+        # ensure file path exists
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
         file.save(file_path)
         new_image = Image(user_id=user_id, file_path=file_path)
         db.session.add(new_image)

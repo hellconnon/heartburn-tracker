@@ -9,6 +9,10 @@ API_URL = os.environ.get("API_URL")
 
 
 def authenticate_telegram_id(telegram_id: int):
+    """Authenticate a Telegram ID with the API
+    :arg: telegram_id {int} -- Telegram ID to authenticate
+    :return: {access_token, refresh_token, user_id} if successful, None otherwise
+    """
     response = requests.post(
         f"{API_URL}/auth/login_telegram",
         json={"telegram_id": telegram_id},
