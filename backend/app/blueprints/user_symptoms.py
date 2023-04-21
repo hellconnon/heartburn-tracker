@@ -27,7 +27,6 @@ def add_user_symptom(user_id):
 
     data = request.get_json()
     symptom_id = data.get('symptom_id')
-    timestamp = data.get('timestamp')
     severity = data.get('severity')
     notes = data.get('notes')
 
@@ -35,7 +34,7 @@ def add_user_symptom(user_id):
     if not symptom:
         return jsonify({"message": "Symptom not found"}), 404
 
-    user_symptom = UserSymptom(user_id=user_id, symptom_id=symptom_id, timestamp=timestamp, severity=severity,
+    user_symptom = UserSymptom(user_id=user_id, symptom_id=symptom_id, severity=severity,
                                notes=notes)
     db.session.add(user_symptom)
     db.session.commit()
@@ -56,7 +55,6 @@ def update_user_symptom(user_id, symptom_log_id):
         return jsonify({"message": "Symptom log not found"}), 404
 
     data = request.get_json()
-    user_symptom.timestamp = data.get('timestamp', user_symptom.timestamp)
     user_symptom.severity = data.get('severity', user_symptom.severity)
     user_symptom.notes = data.get('notes', user_symptom.notes)
 

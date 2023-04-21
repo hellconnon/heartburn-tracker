@@ -124,7 +124,6 @@ class UserSymptom(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     symptom_id = db.Column(db.Integer, db.ForeignKey('symptom.id'), nullable=False)
-    timestamp = db.Column(db.DateTime)
     severity = db.Column(db.Integer, nullable=True)
     notes = db.Column(db.String, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -134,7 +133,6 @@ class UserSymptom(db.Model):
             'id': self.id,
             'user_id': self.user_id,
             'symptom_id': self.symptom_id,
-            'timestamp': self.timestamp.isoformat(),
             'severity': self.severity,
             'notes': self.notes,
             'created_at': self.created_at.isoformat()
