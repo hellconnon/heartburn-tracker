@@ -1,5 +1,5 @@
 import logging
-from telegram import Update, ReplyKeyboardMarkup
+from telegram import Update, ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import (Application, ApplicationBuilder, Updater,
                           CommandHandler, MessageHandler, CallbackContext,
                           filters, ConversationHandler, CallbackQueryHandler)
@@ -46,46 +46,46 @@ async def handle_image(update: Update, context: CallbackContext):
 LOG_SYMPTOM, SELECT_SYMPTOM, INPUT_SEVERITY, INPUT_NOTES = range(4)
 
 
-def log_symptom(update: Update, context):
-    update.message.reply_text("Please, send me the name of the symptom you want to log.")
+async def log_symptom(update: Update, context):
+    await update.message.reply_text("Please, send me the name of the symptom you want to log.")
     return SELECT_SYMPTOM
 
 
-def select_symptom(update: Update, context):
+async def select_symptom(update: Update, context):
     symptom_name = update.message.text
     # Search for the symptom using the API
     response = requests.get(f"{API_BASE_URL}/symptoms?search={symptom_name}")
     symptoms = response.json()
-
+    print(symptoms)
     if len(symptoms) == 0:
-        update.message.reply_text("No symptom found. Please try again.")
+        await update.message.reply_text("No symptom found. Please try again.")
         return SELECT_SYMPTOM
 
     keyboard = [[InlineKeyboardButton(s["name"], callback_data=f"{s['id']}")] for s in symptoms]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    update.message.reply_text("Select the symptom you want to log:", reply_markup=reply_markup)
+    await update.message.reply_text("Select the symptom you want to log:", reply_markup=reply_markup)
     return INPUT_SEVERITY
 
 
-def input_severity(update: Update, context):
+async def input_severity(update: Update, context):
     query = update.callback_query
-    query.answer()
+    await query.answer()
 
     context.user_data["symptom_id"] = query.data
-    query.edit_message_text("Please enter the severity of the symptom on a scale of 1 to 10.")
+    await query.edit_message_text("Please enter the severity of the symptom on a scale of 1 to 10.")
     return INPUT_NOTES
 
 
-def input_notes(update: Update, context):
+async def input_notes(update: Update, context):
     severity = int(update.message.text)
     context.user_data["severity"] = severity
-    update.message.reply_text(
+    await update.message.reply_text(
         "Please enter any additional notes about the symptom (or type /skip if you don't want to add notes).")
     return LOG_SYMPTOM
 
 
-def log_symptom_done(update: Update, context):
+async def log_symptom_done(update: Update, context):
     notes = update.message.text
     if notes == "/skip":
         notes = ""
@@ -102,15 +102,15 @@ def log_symptom_done(update: Update, context):
     response = requests.post(f"{API_BASE_URL}/users/{user_id}/symptoms", json=symptom_data)
 
     if response.status_code == 200:
-        update.message.reply_text("Symptom logged successfully!")
+        await update.message.reply_text("Symptom logged successfully!")
     else:
-        update.message.reply_text("An error occurred while logging the symptom. Please try again.")
+        await update.message.reply_text("An error occurred while logging the symptom. Please try again.")
 
     return ConversationHandler.END
 
 
-def cancel(update: Update, context):
-    update.message.reply_text("Operation cancelled.")
+async def cancel(update: Update, context):
+    await update.message.reply_text("Operation cancelled.")
     return ConversationHandler.END
 
 

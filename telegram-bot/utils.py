@@ -10,7 +10,7 @@ API_URL = os.environ.get("API_URL")
 
 def authenticate_telegram_id(telegram_id: int):
     response = requests.post(
-        f"{API_URL}/api/auth/login_telegram",
+        f"{API_URL}/auth/login_telegram",
         json={"telegram_id": telegram_id},
     )
     return response.json()
