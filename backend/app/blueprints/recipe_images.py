@@ -12,7 +12,7 @@ def get_recipe_images(recipe_id):
     if not recipe:
         return jsonify({"message": "Recipe not found"}), 404
 
-    images = [img.serialize() for img in recipe.images]
+    images = [img.to_dict() for img in recipe.images]
     return jsonify(images), 200
 
 

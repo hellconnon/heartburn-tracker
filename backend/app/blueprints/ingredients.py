@@ -9,7 +9,7 @@ ingredients_blueprint = Blueprint('ingredients', __name__)
 @jwt_required()
 def get_ingredients():
     ingredients = Ingredient.query.all()
-    return jsonify([ingredient.serialize() for ingredient in ingredients])
+    return jsonify([ingredient.to_dict() for ingredient in ingredients])
 
 
 @ingredients_blueprint.route('/ingredients', methods=['POST'])
@@ -28,7 +28,7 @@ def add_ingredient():
     ingredient = Ingredient(name=name, fats=fats, calories=calories, proteins=proteins, carbohydrates=carbohydrates)
     db.session.add(ingredient)
     db.session.commit()
-    return jsonify({"message": "Ingredient added successfully", "ingredient": ingredient.serialize()}), 201
+    return jsonify({"message": "Ingredient added successfully", "ingredient": ingredient.to_dict()}), 201
 
 
 @ingredients_blueprint.route('/ingredients/<int:id>', methods=['PUT'])
@@ -46,7 +46,7 @@ def update_ingredient(id):
     ingredient.carbohydrates = data.get('carbohydrates', ingredient.carbohydrates)
 
     db.session.commit()
-    return jsonify({"message": "Ingredient updated successfully", "ingredient": ingredient.serialize()}), 200
+    return jsonify({"message": "Ingredient updated successfully", "ingredient": ingredient.to_dict()}), 200
 
 
 @ingredients_blueprint.route('/ingredients/<int:id>', methods=['DELETE'])

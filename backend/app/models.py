@@ -11,6 +11,14 @@ class User(db.Model):
     password = db.Column(db.String, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'telegram_id': self.telegram_id,
+            'email': self.email,
+            'created_at': self.created_at.isoformat()
+        }
+
 
 class Ingredient(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -21,7 +29,7 @@ class Ingredient(db.Model):
     carbohydrates = db.Column(db.Float, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    def serialize(self):
+    def to_dict(self):
         return {
             'id': self.id,
             'name': self.name,
@@ -56,6 +64,16 @@ class RecipeIngredient(db.Model):
     unit = db.Column(db.String, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'recipe_id': self.recipe_id,
+            'ingredient_id': self.ingredient_id,
+            'quantity': self.quantity,
+            'unit': self.unit,
+            'created_at': self.created_at.isoformat()
+        }
+
 
 class Image(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -64,6 +82,15 @@ class Image(db.Model):
     timestamp = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'file_path': self.file_path,
+            'timestamp': self.timestamp.isoformat(),
+            'created_at': self.created_at.isoformat()
+        }
+
 
 class RecipeImage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -71,11 +98,26 @@ class RecipeImage(db.Model):
     image_id = db.Column(db.Integer, db.ForeignKey('image.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'recipe_id': self.recipe_id,
+            'image_id': self.image_id,
+            'created_at': self.created_at.isoformat()
+        }
+
 
 class Symptom(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, unique=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'created_at': self.created_at.isoformat()
+        }
 
 
 class UserSymptom(db.Model):
@@ -86,3 +128,14 @@ class UserSymptom(db.Model):
     severity = db.Column(db.Integer, nullable=True)
     notes = db.Column(db.String, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'symptom_id': self.symptom_id,
+            'timestamp': self.timestamp.isoformat(),
+            'severity': self.severity,
+            'notes': self.notes,
+            'created_at': self.created_at.isoformat()
+        }
