@@ -39,7 +39,7 @@ def upload_image():
         # ensure file path exists
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         file.save(file_path)
-        new_image = Image(user_id=user_id, file_path=file_path)
+        new_image = Image(user_id=user_id, file_name=filename)
         db.session.add(new_image)
         db.session.commit()
         return jsonify(new_image.to_dict()), 201
@@ -53,7 +53,7 @@ def delete_image(image_id):
     user_id = get_jwt_identity()
     image = Image.query.filter_by(id=image_id, user_id=user_id).first()
     if image:
-        os.remove(image.file_path)
+        os.remove(image.file_name)
         db.session.delete(image)
         db.session.commit()
         return jsonify({"message": "Image deleted"}), 200
@@ -61,9 +61,14 @@ def delete_image(image_id):
         return jsonify({"error": "Image not found"}), 404
 
 
-@images_blueprint.route("/uploads/<path:filename>", methods=["GET"])
+@images_blueprint.route("/images/<int:image_id>", methods=["GET"])
 @jwt_required()
-def get_uploaded_file(filename):
+def get_uploaded_file(image_id):
     user_id = get_jwt_identity()
-    user_directory = os.path.join("uploads", user_id)
-    return send_from_directory(user_directory, filename)
+    file_name = Image.query.filter_by(id=image_id, user_id=user_id).first_or_404().file_name
+
+    if file_name:
+        user_directory = os.path.join(current_app.instance_path, "uploads", str(user_id))
+        return send_from_directory(user_directory, file_name)
+    else:
+        return jsonify({"error": "Image not found"}), 404

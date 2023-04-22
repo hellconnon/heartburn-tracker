@@ -78,14 +78,13 @@ class RecipeIngredient(db.Model):
 class Image(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    file_path = db.Column(db.String)
+    file_name = db.Column(db.String)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def to_dict(self):
         return {
             'id': self.id,
             'user_id': self.user_id,
-            'file_path': self.file_path,
             'created_at': self.created_at.isoformat()
         }
 
