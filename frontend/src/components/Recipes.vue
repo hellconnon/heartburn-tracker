@@ -3,9 +3,9 @@
 
         <Sidebar/>
 
-        <div class="grid grid-cols-3 gap-4 h-full w-full border">
-            <div class="col-span-1 border">
-                <h2 class="p-6 text-lg text-white font-bold mb-4">Recipes</h2>
+        <div class="grid grid-cols-3 gap-4 h-full w-full">
+            <div class="col-span-1">
+                <h2 class="sticky p-6 text-lg text-white font-bold mb-4">Recipes</h2>
 
                 <div class="space-y-2">
                     <RecipeListItem
@@ -18,7 +18,7 @@
                     />
                 </div>
             </div>
-            <div class="col-span-2 border p-4">
+            <div class="col-span-2 p-4 rounded-3xl" :class="{'border': selectedRecipe}">
                 <div v-if="selectedRecipe">
                     <h2 class="text-lg font-bold mb-4">{{ selectedRecipe.name }}</h2>
                     <p class="text-sm text-gray-600 mb-4">{{ selectedRecipe.count }} recipes</p>
