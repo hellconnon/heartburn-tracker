@@ -1,29 +1,36 @@
 <template>
-    <div class="user-images container">
-        <h2 class="my-4">User Images</h2>
-        <div v-if="isLoading" class="text-center">
-            <div class="spinner-border" role="status">
-                <span class="sr-only"></span>
-            </div>
-        </div>
-        <div v-else class="row">
-            <div class="col-md-4 col-sm-6 mb-4" v-for="image in images" :key="image.id">
-                <div class="card bg-dark">
-                    <img :src="image.url" :alt="image.id" class="image-container card-img"/>
-                    <h3 class="text-white">Test Test</h3>
+    <div class="flex">
+
+        <Sidebar/>
+
+        <div class="flex-grow bg-gray-900 min-h-screen text-white">
+            <div class="container mx-auto px-4 py-8">
+                <h2 class="text-2xl mb-8">User Images</h2>
+                <div v-if="isLoading" class="flex justify-center text-white">
+                    <div class="spinner-border" role="status">
+                        <span class="sr-only"></span>
+                    </div>
+                </div>
+                <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <div v-for="image in images" :key="image.id">
+                        <div class="bg-gray-800 rounded overflow-hidden">
+                            <img :src="image.url" :alt="image.id" class="w-full h-auto"/>
+                            <h3 class="text-center py-2">Test Test</h3>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </template>
+
 <script>
 import axios from "axios";
+import Sidebar from "@/components/Sidebar.vue";
 
 export default {
     name: "UserImages",
-    compatConfig: {
-        MODE: 3
-    },
+    components: {Sidebar},
     data() {
         return {
             images: [],
@@ -63,5 +70,3 @@ export default {
     },
 };
 </script>
-<style scoped>
-</style>

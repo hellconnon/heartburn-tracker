@@ -1,10 +1,18 @@
 <template>
-$END$
+<div class="flex">
+    <Sidebar/>
+
+
+</div>
+
 </template>
 
 <script>
+import Sidebar from "./Sidebar.vue"
+
 export default {
-name: "Ingredients"
+    name: "Ingredients",
+    components: {Sidebar}
 }
 </script>
 

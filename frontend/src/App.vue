@@ -1,24 +1,17 @@
 <template>
-  <div>
-    <Sidebar />
-    <div class="content">
-      <router-view />
+    <div id="app" class="min-h-screen bg-gray-900">
+        <router-view />
     </div>
-  </div>
 </template>
 
 <script>
+import {defineComponent} from "vue";
 import Sidebar from "./components/Sidebar.vue";
 
-export default {
-  components: {
-    Sidebar,
-  },
-};
+export default defineComponent({
+    components: {Sidebar}
+})
 </script>
 
 <style scoped>
-.content {
-  margin-left: 240px; /* Adjust this value according to the width of your sidebar */
-}
 </style>

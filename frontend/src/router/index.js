@@ -4,6 +4,7 @@ import Login from '../components/Login.vue'
 import Register from '../components/Register.vue'
 import UserImages from "../components/UserImages.vue";
 import Recipes from "../components/Recipes.vue";
+import Ingredients from "@/components/Ingredients.vue";
 
 const routes = [
     {
@@ -30,6 +31,11 @@ const routes = [
         path: '/recipes',
         name: 'Recipes',
         component: Recipes
+    },
+    {
+        path: '/ingredients',
+        name: 'Ingredients',
+        component: Ingredients
     }
 ]
 
