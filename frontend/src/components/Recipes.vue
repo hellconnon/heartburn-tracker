@@ -1,5 +1,5 @@
 <template>
-    <div class="flex text-white pt-4 pr-4">
+    <div class="flex pr-4">
 
         <Sidebar/>
 
@@ -18,7 +18,7 @@
                     />
                 </div>
             </div>
-            <div class="col-span-2 p-4 rounded-3xl" :class="{'border': selectedRecipe}">
+            <div class="col-span-2 p-4 rounded-3xl text-white" :class="{'border': selectedRecipe}">
                 <div v-if="selectedRecipe">
                     <h2 class="text-lg font-bold mb-4">{{ selectedRecipe.name }}</h2>
                     <p class="text-sm text-gray-600 mb-4">{{ selectedRecipe.count }} recipes</p>
@@ -32,7 +32,7 @@
                     </button>
                 </div>
                 <div v-else class="flex items-center justify-center h-full">
-                    <p class="text-lg font-bold p-5">Select a recipe to view details</p>
+                    <p class="text-lg text-white font-bold p-5">Select a recipe to view details</p>
                 </div>
 
             </div>
@@ -52,7 +52,7 @@ export default {
             recipes: [
                 {
                     name: "Pasta",
-                    count: 10,
+                    count: 42,
                     description: "A delicious Italian dish",
                     ingredients: ["pasta", "tomato sauce", "cheese"]
                 },
