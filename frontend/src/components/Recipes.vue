@@ -26,8 +26,9 @@
             :key="index"
             :recipe-name="recipe.name"
             :recipe-count="recipe.count"
+            :recipe-type="recipe.type"
             :selected="index === selectedIndex"
-            @select="selectRecipe(index)"
+            @select="selectRecipe(index, recipe)"
           />
         </div>
       </div>
@@ -35,12 +36,12 @@
         class="col-span-2 p-4 rounded-3xl text-white"
         :class="{ border: selectedRecipe }"
       >
-
-
         <div v-if="showAddRecipe" class="border">
-        <AddRecipeDialog @close="showAddRecipe = false"/>
+          <AddRecipeDialog
+            @close="showAddRecipe = false"
+            @recipeAdded="recipeAdded"
+          />
         </div>
-
 
         <div v-if="selectedRecipe">
           <h2 class="text-lg font-bold mb-4">{{ selectedRecipe.name }}</h2>
@@ -59,7 +60,7 @@
           </ul>
           <button
             class="mt-4 text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded-md focus:outline-none"
-            @click="deleteRecipe(selectedIndex)"
+            @click="deleteRecipe(selectedIndex, selectedRecipe)"
           >
             Delete
           </button>
@@ -77,7 +78,8 @@
 <script>
 import Sidebar from "./Sidebar.vue";
 import RecipeListItem from "@/components/RecipeListItem.vue";
-import AddRecipeDialog from '@/components/AddRecipeDialog.vue'
+import AddRecipeDialog from "@/components/AddRecipeDialog.vue";
+import axios from "axios";
 
 export default {
   name: "Recipes",
@@ -85,36 +87,47 @@ export default {
   data() {
     return {
       showAddRecipe: false,
-      recipes: [
-        {
-          name: "Pasta",
-          count: 42,
-          description: "A delicious Italian dish",
-          ingredients: ["pasta", "tomato sauce", "cheese"],
-        },
-        {
-          name: "Pizza",
-          count: 8,
-          description: "A classic Italian dish",
-          ingredients: ["dough", "tomato sauce", "cheese", "toppings"],
-        },
-        {
-          name: "Burger",
-          count: 6,
-          description: "A classic American dish",
-          ingredients: ["buns", "beef patty", "lettuce", "tomato", "cheese"],
-        },
-      ],
       selectedIndex: -1,
+      recipes: [],
     };
   },
   methods: {
-    deleteRecipe(index) {
-      this.recipes.splice(index, 1);
-      this.selectedIndex = -1;
+    async deleteRecipe(index, recipe) {
+      try {
+        const token = localStorage.getItem("access_token");
+        const response = await axios.delete(
+          `http://localhost:5000/api/recipes/${recipe.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+          );
+          console.log(response.data); // Log the response data, if needed
+          this.recipes.splice(index, 1);
+          this.selectedIndex = -1;
+      } catch (error) {
+        console.error(error); // Handle any errors
+      }
     },
-    selectRecipe(index) {
+    selectRecipe(index, recipe) {
       this.selectedIndex = index;
+      this.selectedRecipe = recipe;
+    },
+    async getRecipes() {
+      try {
+        const token = localStorage.getItem("access_token");
+        const response = await axios.get(`http://localhost:5000/api/recipes`, {
+          headers: { Authorization: `Bearer ${token}` }, // Add the JWT token to the request headers
+        });
+        const responseData = response.data;
+        responseData.forEach((item) => (item.count = 0));
+        this.recipes = responseData;
+      } catch (error) {}
+    },
+    recipeAdded(newRecipe) {
+      newRecipe.count = 0;
+      this.recipes.push(newRecipe);
     },
   },
   computed: {
@@ -123,6 +136,9 @@ export default {
         ? this.recipes[this.selectedIndex]
         : null;
     },
+  },
+  created() {
+    this.getRecipes();
   },
 };
 </script>

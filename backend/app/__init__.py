@@ -36,6 +36,6 @@ def create_app(test_config=None):
     # Enable JWT
     jwt = JWTManager(app)
     # Enable CORS for your frontend
-    CORS(app)
+    CORS(app, resources={r"/*": {"origins":"*"}})
 
     return app

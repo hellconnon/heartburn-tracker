@@ -9,7 +9,7 @@ recipes_blueprint = Blueprint('recipes', __name__)
 @jwt_required()
 def get_all_recipes():
     user_id = get_jwt_identity()
-    recipes = Recipe.query.filter_by(user_id=user_id).all()
+    recipes = Recipe.query.all()
     return jsonify([recipe.to_dict() for recipe in recipes])
 
 
@@ -22,7 +22,6 @@ def create_recipe():
     recipe = Recipe(
         name=data['name'],
         type=data['type'],
-        user_id=user_id
     )
     db.session.add(recipe)
     db.session.commit()
@@ -34,7 +33,7 @@ def create_recipe():
 @jwt_required()
 def get_recipe(recipe_id):
     user_id = get_jwt_identity()
-    recipe = Recipe.query.filter_by(id=recipe_id, user_id=user_id).first_or_404()
+    recipe = Recipe.query.filter_by(id=recipe_id).first_or_404()
 
     return jsonify(recipe.to_dict())
 
@@ -43,7 +42,7 @@ def get_recipe(recipe_id):
 @jwt_required()
 def update_recipe(recipe_id):
     user_id = get_jwt_identity()
-    recipe = Recipe.query.filter_by(id=recipe_id, user_id=user_id).first_or_404()
+    recipe = Recipe.query.filter_by(id=recipe_id).first_or_404()
     data = request.get_json()
 
     recipe.name = data['name']
@@ -57,7 +56,7 @@ def update_recipe(recipe_id):
 @jwt_required()
 def delete_recipe(recipe_id):
     user_id = get_jwt_identity()
-    recipe = Recipe.query.filter_by(id=recipe_id, user_id=user_id).first_or_404()
+    recipe = Recipe.query.filter_by(id=recipe_id).first_or_404()
 
     db.session.delete(recipe)
     db.session.commit()
