@@ -3,9 +3,9 @@
 
         <Sidebar/>
 
-        <div class="grid grid-cols-3 gap-4 h-full w-full">
+        <div class="pl-8 pt-4 grid grid-cols-3 gap-4 h-full w-full">
             <div class="col-span-1">
-                <h2 class="sticky p-6 text-lg text-white font-bold mb-4">Recipes</h2>
+                <h2 class="sticky text-lg text-white font-bold mb-4">Recipes</h2>
 
                 <div class="space-y-2">
                     <RecipeListItem
