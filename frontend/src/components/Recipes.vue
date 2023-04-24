@@ -9,6 +9,7 @@
           <div class="flex items-center justify-end">
             <button
               class="fas fa-plus text-white border rounded-full w-8 h-8 hover:bg-white hover:text-blue-700 mr-2"
+              @click="showAddRecipe = true"
             ></button>
             <button
               class="fas fa-filter text-white border rounded-full w-8 h-8 hover:bg-white hover:text-blue-700 mr-2"
@@ -34,6 +35,13 @@
         class="col-span-2 p-4 rounded-3xl text-white"
         :class="{ border: selectedRecipe }"
       >
+
+
+        <div v-if="showAddRecipe" class="border">
+        <AddRecipeDialog @close="showAddRecipe = false"/>
+        </div>
+
+
         <div v-if="selectedRecipe">
           <h2 class="text-lg font-bold mb-4">{{ selectedRecipe.name }}</h2>
           <p class="text-sm text-gray-600 mb-4">
@@ -69,12 +77,14 @@
 <script>
 import Sidebar from "./Sidebar.vue";
 import RecipeListItem from "@/components/RecipeListItem.vue";
+import AddRecipeDialog from '@/components/AddRecipeDialog.vue'
 
 export default {
   name: "Recipes",
-  components: { RecipeListItem, Sidebar },
+  components: { RecipeListItem, Sidebar, AddRecipeDialog },
   data() {
     return {
+      showAddRecipe: false,
       recipes: [
         {
           name: "Pasta",
